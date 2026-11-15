@@ -215,9 +215,21 @@ export default async (request) => {
         }
 
         // Preserve upstream status and response body.
-        const responseBody = [204, 205, 304].includes(upstream.status)
-            ? null
-            : upstream.body;
+        // Temporary diagnostics
+const responseText = await upstream.clone().text();
+
+console.log("Cookie proxy upstream:", {
+    status: upstream.status,
+    contentType: upstream.headers.get("content-type"),
+    server: upstream.headers.get("server"),
+    cfRay: upstream.headers.get("cf-ray"),
+    bodyPreview: responseText.slice(0, 300)
+});
+
+// Preserve upstream status and response body.
+const responseBody = [204, 205, 304].includes(upstream.status)
+    ? null
+    : upstream.body;
 
         return new Response(responseBody, {
             status: upstream.status,
